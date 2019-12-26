@@ -1,0 +1,6 @@
+
+nginx-1.10.2
+workspace
+*.o
+*.so
+*.swap
