@@ -1,25 +1,42 @@
 # learn_nginx
 
-# install depends
-make init
+# usage
+* install depends
+```c
+$ make init
+```
 
-# run nginx
-make run
+* run nginx
+```c
+$ make run
+```
 
-# show nginx process
-make ps
+* show nginx process
+```c
+$ make ps
+```
 
-# stop nginx
-make stop
+* stop nginx
+```c
+$ make stop
+```
 
-# debug project
-make gdb
+* debug project
+```c
+$ make gdb
+```
 
-# clean
-make clean
+* clean
+```c
+$ make clean
+```
 
-# build nginx
+* build nginx
+```c
 make build
+```
 
-# test hello world
+* test hello world
+```c
 make hello
+```
