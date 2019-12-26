@@ -11,8 +11,16 @@ nginx:
 
 all: wget conf nginx install
 
+init: env all
+
 wget:
 	$(shell if ! test -d $(NGINX_PATH); then wget http://nginx.org/download/$(NGINX_TAR) && tar -zxf $(NGINX_TAR) && rm -rf $(NGINX_TAR); fi;)
+
+env:
+	sudo apt install -y openssl libssl-dev
+	sudo apt install -y libpcre3 libpcre3-dev
+	sudo apt install -y zlib1g-dev
+	sudo apt install -y cgdb
 
 conf:
 	cd $(NGINX_PATH); ./configure \
@@ -23,7 +31,19 @@ conf:
 		--with-debug \
 		--add-module=../$(NGINX_MODULES_PATH)
 
-install:
+run:
+	cd $(WORKSPACE)/sbin; sudo ./nginx
+
+stop:
+	cd $(WORKSPACE)/sbin; sudo ./nginx -s stop
+
+ps:
+	@ps -ef | grep nginx
+
+gdb:
+	cd $(WORKSPACE)/sbin; sudo cgdb ./nginx
+
+install: nginx
 	cd $(NGINX_PATH); make install
 	cp -rf $(PROJECT_ROOT)/myconf/nginx.conf $(WORKSPACE)/conf/nginx.conf
 
