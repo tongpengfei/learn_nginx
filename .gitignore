@@ -4,3 +4,5 @@ workspace
 *.o
 *.so
 *.swap
+cscope.*
+tags

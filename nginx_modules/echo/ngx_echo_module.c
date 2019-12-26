@@ -3,6 +3,8 @@
 #include <ngx_http.h>
 #include <nginx.h>
 
+#include "ngx_echo_handler_proc.h"
+
 static char *ngx_echo(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 
 static ngx_command_t ngx_echo_commands[] = {
@@ -57,30 +59,8 @@ static ngx_int_t ngx_echo_handler(ngx_http_request_t *r){
 		return rc;
 	}
 
-	ngx_str_t type = ngx_string("text/plain");
-	ngx_str_t response = ngx_string("Hello World, I am echo!\n");
-	r->headers_out.status = NGX_HTTP_OK;
-	r->headers_out.content_length_n = response.len;
-	r->headers_out.content_type = type;
-
-	rc = ngx_http_send_header(r);
-	if(rc == NGX_ERROR || rc > NGX_OK || r->header_only){
-		return rc;
-	}
-
-	ngx_buf_t* b;
-	b = ngx_create_temp_buf(r->pool, response.len);
-	if( NULL == b ){
-		return NGX_HTTP_INTERNAL_SERVER_ERROR;
-	}
-	ngx_memcpy(b->pos, response.data, response.len);
-	b->last = b->pos + response.len;
-	b->last_buf = 1;
-
-	ngx_chain_t out;
-	out.buf = b;
-	out.next = NULL;
-	return ngx_http_output_filter(r, &out);
+	rc = ngx_echo_handler_proc(r);	
+	return rc;
 }
 
 static char* ngx_echo(ngx_conf_t *cf, ngx_command_t *cmd, void *conf){
