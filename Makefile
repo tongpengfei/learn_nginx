@@ -58,8 +58,8 @@ gdb:
 	cd $(WORKSPACE)/sbin; sudo cgdb ./nginx
 
 hello:
-	curl http://127.0.0.1/test_hello
+	curl http://127.0.0.1/helloworld
 
 echo:
-	curl http://127.0.0.1/test_echo
+	curl http://127.0.0.1/echo
 	

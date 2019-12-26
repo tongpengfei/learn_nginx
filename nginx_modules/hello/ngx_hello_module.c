@@ -58,7 +58,7 @@ static ngx_int_t ngx_hello_handler(ngx_http_request_t *r){
 	}
 
 	ngx_str_t type = ngx_string("text/plain");
-	ngx_str_t response = ngx_string("Hello World!");
+	ngx_str_t response = ngx_string("Hello World!\n");
 	r->headers_out.status = NGX_HTTP_OK;
 	r->headers_out.content_length_n = response.len;
 	r->headers_out.content_type = type;
