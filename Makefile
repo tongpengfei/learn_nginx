@@ -32,7 +32,7 @@ conf:
 		--add-module=../$(NGINX_MODULES_PATH)
 
 install: nginx
-	cd $(WORKSPACE)/sbin; sudo ./nginx -s stop
+	$(shell if test -d $(WORKSPACE); then cd $(WORKSPACE)/sbin; && sudo ./nginx -s stop)
 	cd $(NGINX_PATH); make install
 	cp -rf $(PROJECT_ROOT)/myconf/nginx.conf $(WORKSPACE)/conf/nginx.conf
 
