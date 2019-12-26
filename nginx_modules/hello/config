@@ -1,0 +1,17 @@
+ngx_addon_name="ngx_hello_module"
+
+CORE_MODULES="$CORE_MODULES \
+	"
+
+HTTP_MODULES="$HTTP_MODULES \
+	ngx_hello_module \
+	"
+
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS \
+	"
+	
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS \
+	$ngx_addon_dir/ngx_hello_module.c \
+	"
+
+CFLAGS="$CFLAGS -I$ngx_addon_dir"

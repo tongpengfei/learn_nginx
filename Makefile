@@ -29,14 +29,15 @@ conf:
 		--with-stream \
 		--with-stream_ssl_module \
 		--with-debug \
-		--add-module=../$(NGINX_MODULES_PATH)
+		--add-module=../$(NGINX_MODULES_PATH)/hello \
+		--add-module=../$(NGINX_MODULES_PATH)/echo \
 
-install: nginx
-	$(shell if test -d $(WORKSPACE); then cd $(WORKSPACE)/sbin; && sudo ./nginx -s stop)
+
+install: nginx stop
 	cd $(NGINX_PATH); make install
 	cp -rf $(PROJECT_ROOT)/myconf/nginx.conf $(WORKSPACE)/conf/nginx.conf
 
-clean:
+clean: stop
 	rm -rf $(NGINX_PATH)/objs
 	rm -rf $(WORKSPACE)
 
@@ -44,7 +45,7 @@ run:
 	cd $(WORKSPACE)/sbin; sudo ./nginx
 
 stop:
-	cd $(WORKSPACE)/sbin; sudo ./nginx -s stop
+	$(shell if test -d $(WORKSPACE)/sbin; then cd $(WORKSPACE)/sbin && sudo ./nginx -s stop; fi)
 
 reopen:
 	cd $(WORKSPACE)/sbin; sudo ./nginx -s reopen
@@ -57,5 +58,8 @@ gdb:
 	cd $(WORKSPACE)/sbin; sudo cgdb ./nginx
 
 hello:
-	curl http://127.0.0.1/http_test
+	curl http://127.0.0.1/test_hello
+
+echo:
+	curl http://127.0.0.1/test_echo
 	

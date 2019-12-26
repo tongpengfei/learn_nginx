@@ -1,17 +1,17 @@
-ngx_addon_name="ngx_test_module"
+ngx_addon_name="ngx_echo_module"
 
 CORE_MODULES="$CORE_MODULES \
 	"
 
 HTTP_MODULES="$HTTP_MODULES \
-	ngx_http_test_module \
+	ngx_echo_module \
 	"
 
 NGX_ADDON_DEPS="$NGX_ADDON_DEPS \
 	"
 	
 NGX_ADDON_SRCS="$NGX_ADDON_SRCS \
-	$ngx_addon_dir/ngx_http_test_module.c \
+	$ngx_addon_dir/ngx_echo_module.c \
 	"
 
 CFLAGS="$CFLAGS -I$ngx_addon_dir"
