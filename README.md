@@ -1,9 +1,9 @@
 # learn_nginx
 
-# init project
+# install depends
 make init
 
-# run
+# run nginx
 make run
 
 # show nginx process
@@ -12,11 +12,14 @@ make ps
 # stop nginx
 make stop
 
-# gdb
+# debug project
 make gdb
 
 # clean
 make clean
 
-# build
+# build nginx
 make build
+
+# test hello world
+make hello

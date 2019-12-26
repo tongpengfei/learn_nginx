@@ -31,11 +31,24 @@ conf:
 		--with-debug \
 		--add-module=../$(NGINX_MODULES_PATH)
 
+install: nginx
+	cd $(WORKSPACE)/sbin; sudo ./nginx -s stop
+	cd $(NGINX_PATH); make install
+	cp -rf $(PROJECT_ROOT)/myconf/nginx.conf $(WORKSPACE)/conf/nginx.conf
+
+clean:
+	rm -rf $(NGINX_PATH)/objs
+	rm -rf $(WORKSPACE)
+
 run:
 	cd $(WORKSPACE)/sbin; sudo ./nginx
 
 stop:
 	cd $(WORKSPACE)/sbin; sudo ./nginx -s stop
+
+reopen:
+	cd $(WORKSPACE)/sbin; sudo ./nginx -s reopen
+	
 
 ps:
 	@ps -ef | grep nginx
@@ -43,10 +56,6 @@ ps:
 gdb:
 	cd $(WORKSPACE)/sbin; sudo cgdb ./nginx
 
-install: nginx
-	cd $(NGINX_PATH); make install
-	cp -rf $(PROJECT_ROOT)/myconf/nginx.conf $(WORKSPACE)/conf/nginx.conf
-
-clean:
-	rm -rf $(NGINX_PATH)/objs
-	rm -rf $(WORKSPACE)
+hello:
+	curl http://127.0.0.1/http_test
+	
