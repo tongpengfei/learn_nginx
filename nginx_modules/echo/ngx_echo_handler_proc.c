@@ -5,6 +5,9 @@
 #include <ngx_http.h>
 #include <nginx.h>
 
+#define tlog_debug(log, fmt, ...) ngx_log_error_core(NGX_LOG_DEBUG, log, 0, fmt, ##__VA_ARGS__)
+#define tlog_error(log, fmt, ...) ngx_log_error_core(NGX_LOG_ERR, log, 0, fmt, ##__VA_ARGS__)
+
 typedef struct {
 	ngx_str_t uri;
 	ngx_http_handler_pt handler;
@@ -27,8 +30,8 @@ static echo_handler uri_handlers[] = {
 };
 
 
-static ngx_int_t test_queue();
-static ngx_int_t test_pool();
+static ngx_int_t test_queue(ngx_log_t* log);
+static ngx_int_t test_pool(ngx_log_t* log);
 
 static echo_tester testers[] = {
 	{ ngx_string("ngx_queue_t"), test_queue },
@@ -130,12 +133,12 @@ static ngx_int_t handler_type(ngx_http_request_t *r){
 	ngx_int_t tc = 0;
 	for( int i=0; i<ntester; ++i ){
 		t = testers + i;
-		tc = t->handler();
+		tc = t->handler(r->connection->log);
 
 		if( 0 == tc ){
-			ngx_str_appendf(&res, sizeof(buf), "T %2d %-10s\n", i, t->name.data);
+			ngx_str_appendf(&res, sizeof(buf), "T %2d code=%2d %-10s\n", i, tc, t->name.data);
 		}else{
-			ngx_str_appendf(&res, sizeof(buf), "F %2d %-10s\n", i, t->name.data);
+			ngx_str_appendf(&res, sizeof(buf), "F %2d code=%2d %-10s\n", i, tc, t->name.data);
 		}
 	}
 
@@ -143,14 +146,78 @@ static ngx_int_t handler_type(ngx_http_request_t *r){
 	return rc;
 }
 
-static ngx_int_t test_queue(){
+static ngx_int_t test_queue(ngx_log_t* log){
 
+	static ngx_int_t arr[] = {0,1,2,3,4,5,6,7,8,9};
+
+	typedef struct{
+		ngx_int_t n;
+		ngx_queue_t q;
+	}test_element;
+
+	static const ngx_int_t nelement = sizeof(arr)/sizeof(arr[0]);
+	test_element elements[nelement];
+	(void)elements;
+
+	ngx_queue_t queue;
+	ngx_queue_init(&queue);
+
+	if( !ngx_queue_empty(&queue) ){
+		tlog_error(log, "queue should be empty");
+		return -1;
+	}
+
+	tlog_debug(log, "test ngx_queue_insert_tail:");
+
+	for( ngx_int_t i=0; i<nelement; ++i ){
+		test_element* e = elements + i;
+		e->n = i;
+
+		ngx_queue_insert_tail(&queue, &e->q);
+		tlog_debug(log, "ngx_queue_insert_tail %d", i);
+	}
+
+	tlog_debug(log, "ngx_queue_t foreach:");
+	ngx_int_t i=0;
+	while( !ngx_queue_empty(&queue) ){
+		ngx_queue_t* head = ngx_queue_head(&queue);
+
+		test_element* e = ngx_queue_data( head, test_element, q);
+
+		tlog_debug(log, "%d => %d", i++, e->n);
+		ngx_queue_remove(head);
+	}
 
 	return 0;
 }
 
-static ngx_int_t test_pool(){
+static ngx_int_t test_pool(ngx_log_t* log){
+	(void)log;
+/*
+	static ngx_int_t arr[] = {0,1,2,3,4,5,6,7,8,9};
 
+	typedef struct{
+		ngx_int_t n;
+		ngx_queue_t q;
+	}test_queue;
+
+	ngx_int_t nelement = sizeof(arr)/sizeof(arr[0]);
+	ngx_pool_t* pool = ngx_create_pool(sizeof(test_queue) * nelement, NULL);
+	if( !pool ){
+		return -1;
+	}
+
+	ngx_queue_t queue;
+	ngx_queue_init(&queue);
+
+	for( ngx_int_t i=0; i<sizeof(arr)/sizeof(arr[0]); ++i ){
+		test_queue* q = ngx_palloc(pool, sizeof(test_queue));
+
+		ngx_queue_insert_tail(&queue, q);
+	}
+
+	ngx_destroy_pool(pool);
+*/
 	return 0;
 }
 
