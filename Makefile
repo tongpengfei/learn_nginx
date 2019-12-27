@@ -62,4 +62,8 @@ hello:
 
 echo:
 	curl http://127.0.0.1/echo
+	@echo "# test ver:"
+	@curl http://127.0.0.1/echo/ver
+	@echo "# test ngx_types:"
+	curl http://127.0.0.1/echo/type
 	
