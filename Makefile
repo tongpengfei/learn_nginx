@@ -5,7 +5,7 @@ WORKSPACE:=$(PROJECT_ROOT)/workspace
 NGINX_MODULES_PATH:=nginx_modules
 NGINX_TAR:=nginx-1.10.2.tar.gz
 
-PLAT=`cat /etc/issue | awk -F" " '{print $$1}' | tr A-Z a-z`
+PLAT=`cat /etc/issue | head -n 1 | awk -F" " '{print $$1}' | tr A-Z a-z`
 
 ifeq ($(PLAT), "centos")
 APT=yum install -y
