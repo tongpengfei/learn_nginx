@@ -41,7 +41,9 @@ clean: stop
 	rm -rf $(NGINX_PATH)/objs
 	rm -rf $(WORKSPACE)
 
-run:
+run: stop
+	@sed 's/daemon off/daemon on/g' -i $(WORKSPACE)/conf/nginx.conf
+	@sed 's/master_process off/master_process on/g' -i $(WORKSPACE)/conf/nginx.conf
 	cd $(WORKSPACE)/sbin; sudo ./nginx
 
 stop:
@@ -54,7 +56,9 @@ reopen:
 ps:
 	@ps -ef | grep nginx
 
-gdb:
+gdb: stop
+	@sed 's/daemon on/daemon off/g' -i $(WORKSPACE)/conf/nginx.conf
+	@sed 's/master_process on/master_process off/g' -i $(WORKSPACE)/conf/nginx.conf
 	cd $(WORKSPACE)/sbin; sudo cgdb ./nginx
 
 hello:
