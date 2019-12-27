@@ -4,19 +4,29 @@ NGINX_PATH:=$(PROJECT_ROOT)/nginx-1.10.2
 WORKSPACE:=$(PROJECT_ROOT)/workspace
 NGINX_MODULES_PATH:=nginx_modules
 NGINX_TAR:=nginx-1.10.2.tar.gz
+APT:=none
+PLAT=$(shell cat /etc/issue | head -n 1 | awk -F" " '{print $$1}' | tr A-Z a-z)
 
-PLAT=`cat /etc/issue | head -n 1 | awk -F" " '{print $$1}' | tr A-Z a-z`
-
-ifeq ($(PLAT), "centos")
-APT=yum install -y
-else
-APT=apt install -y
+ifeq ($(PLAT),centos)
+  APT:=yum install -y
 endif
+
+ifeq ($(PLAT),ubuntu)
+  APT:=apt install -y
+endif
+
+ifeq ($(APT),none)
+.PHONY: fail
+endif
+
 
 nginx:
 	cd $(NGINX_PATH); make
 
 all: wget conf nginx install
+
+fail:
+	@echo "unknown platform $(PLAT)"
 
 init: env all
 
