@@ -9,10 +9,12 @@ PLAT=$(shell cat /etc/issue | head -n 1 | awk -F" " '{print $$1}' | tr A-Z a-z)
 
 ifeq ($(PLAT),centos)
   APT:=yum install -y
+  DEPENDS:=zlib zlib-devel openssl openssl-devel pcre pcre-devel gcc cgdb
 endif
 
 ifeq ($(PLAT),ubuntu)
   APT:=apt install -y
+  DEPENDS:=openssl libssl-dev libpcre3 libpcre3-dev zlib1g-dev gcc cgdb
 endif
 
 ifeq ($(APT),none)
@@ -34,11 +36,7 @@ wget:
 	$(shell if ! test -d $(NGINX_PATH); then wget http://nginx.org/download/$(NGINX_TAR) && tar -zxf $(NGINX_TAR) && rm -rf $(NGINX_TAR); fi;)
 
 env:
-	@echo [$(PLAT)] [$(APT)]
-	sudo $(APT) openssl libssl-dev
-	sudo $(APT) libpcre3 libpcre3-dev
-	sudo $(APT) zlib1g-dev
-	sudo $(APT) cgdb
+	sudo $(APT) $(DEPENDS)
 
 conf:
 	cd $(NGINX_PATH); ./configure \
