@@ -5,6 +5,13 @@ WORKSPACE:=$(PROJECT_ROOT)/workspace
 NGINX_MODULES_PATH:=nginx_modules
 NGINX_TAR:=nginx-1.10.2.tar.gz
 
+PLAT=`cat /etc/issue | awk -F" " '{print $$1}' | tr A-Z a-z`
+
+ifeq ($(PLAT), "centos")
+APT=yum install -y
+else
+APT=apt install -y
+endif
 
 nginx:
 	cd $(NGINX_PATH); make
@@ -17,10 +24,11 @@ wget:
 	$(shell if ! test -d $(NGINX_PATH); then wget http://nginx.org/download/$(NGINX_TAR) && tar -zxf $(NGINX_TAR) && rm -rf $(NGINX_TAR); fi;)
 
 env:
-	sudo apt install -y openssl libssl-dev
-	sudo apt install -y libpcre3 libpcre3-dev
-	sudo apt install -y zlib1g-dev
-	sudo apt install -y cgdb
+	@echo [$(PLAT)] [$(APT)]
+	sudo $(APT) openssl libssl-dev
+	sudo $(APT) libpcre3 libpcre3-dev
+	sudo $(APT) zlib1g-dev
+	sudo $(APT) cgdb
 
 conf:
 	cd $(NGINX_PATH); ./configure \
