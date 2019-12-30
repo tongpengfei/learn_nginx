@@ -25,6 +25,13 @@ typedef struct {
 	echo_tester_pt handler;
 } echo_tester;
 
+typedef struct{
+	ngx_int_t n;
+	ngx_queue_t q;
+}queue_node;
+
+
+
 static ngx_int_t handler_default(ngx_http_request_t *r);
 
 static ngx_int_t handler_ver(ngx_http_request_t *r);
@@ -156,14 +163,8 @@ static ngx_int_t test_queue(ngx_log_t* log){
 
 	static ngx_int_t arr[] = {0,1,2,3,4,5,6,7,8,9};
 
-	typedef struct{
-		ngx_int_t n;
-		ngx_queue_t q;
-	}test_element;
-
-	static const ngx_int_t nelement = sizeof(arr)/sizeof(arr[0]);
-	test_element elements[nelement];
-	(void)elements;
+	static const ngx_int_t nnode = sizeof(arr)/sizeof(arr[0]);
+	queue_node nodes[nnode];
 
 	ngx_queue_t queue;
 	ngx_queue_init(&queue);
@@ -175,8 +176,8 @@ static ngx_int_t test_queue(ngx_log_t* log){
 
 	tlog_debug(log, "ngx_queue_insert_tail:\t");
 
-	for( int i=0; i<nelement; ++i ){
-		test_element* e = elements + i;
+	for( int i=0; i<nnode; ++i ){
+		queue_node* e = nodes + i;
 		e->n = i;
 
 		ngx_queue_insert_tail(&queue, &e->q);
@@ -192,7 +193,7 @@ static ngx_int_t test_queue(ngx_log_t* log){
 	int i=0;
 	for( ngx_queue_t* p=ngx_queue_head(&queue); p != ngx_queue_sentinel(&queue); p=p->next ){
 
-		test_element* e = ngx_queue_data( p, test_element, q);
+		queue_node* e = ngx_queue_data( p, queue_node, q);
 
 		if(0 == i){
 			tlog_debug(log, "%d", (int)e->n);
