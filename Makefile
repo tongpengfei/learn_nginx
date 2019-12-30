@@ -77,6 +77,13 @@ gdb: stop
 	@sed 's/master_process on/master_process off/g' -i $(WORKSPACE)/conf/nginx.conf
 	cd $(WORKSPACE)/sbin; sudo cgdb ./nginx
 
+p: stop
+	@sed 's/daemon on/daemon off/g' -i $(WORKSPACE)/conf/nginx.conf
+	@sed 's/master_process on/master_process off/g' -i $(WORKSPACE)/conf/nginx.conf
+	cd $(WORKSPACE)/sbin; sudo ./nginx
+
+
+
 hello:
 	curl http://127.0.0.1/helloworld
 

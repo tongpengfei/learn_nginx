@@ -5,8 +5,14 @@
 #include <ngx_http.h>
 #include <nginx.h>
 
-#define tlog_debug(log, fmt, ...) ngx_log_error_core(NGX_LOG_DEBUG, log, 0, fmt, ##__VA_ARGS__)
-#define tlog_error(log, fmt, ...) ngx_log_error_core(NGX_LOG_ERR, log, 0, fmt, ##__VA_ARGS__)
+//#define tlog_debug(log, fmt, ...) ngx_log_error_core(NGX_LOG_DEBUG, log, 0, fmt, ##__VA_ARGS__)
+//#define tlog_error(log, fmt, ...) ngx_log_error_core(NGX_LOG_ERR, log, 0, fmt, ##__VA_ARGS__)
+
+#define tlog_debugl(log, fmt, ...) printf( fmt "\n", ##__VA_ARGS__)
+#define tlog_error(log, fmt, ...) printf( fmt "\n", ##__VA_ARGS__)
+
+#define tlog_debug(log, fmt, ...) printf( fmt, ##__VA_ARGS__)
+
 
 typedef struct {
 	ngx_str_t uri;
@@ -167,24 +173,39 @@ static ngx_int_t test_queue(ngx_log_t* log){
 		return -1;
 	}
 
-	tlog_debug(log, "test ngx_queue_insert_tail:");
+	tlog_debug(log, "ngx_queue_insert_tail:\t");
 
-	for( ngx_int_t i=0; i<nelement; ++i ){
+	for( int i=0; i<nelement; ++i ){
 		test_element* e = elements + i;
 		e->n = i;
 
 		ngx_queue_insert_tail(&queue, &e->q);
-		tlog_debug(log, "ngx_queue_insert_tail %d", i);
+		if( i==0 ){
+			tlog_debug(log, "%d", i);
+		}else{
+			tlog_debug(log, ",%d", i);
+		}
 	}
+	tlog_debugl(log, "");
 
-	tlog_debug(log, "ngx_queue_t foreach:");
-	ngx_int_t i=0;
+	tlog_debug(log, "ngx_queue_t foreach:\t");
+	int i=0;
+	for( ngx_queue_t* p=ngx_queue_head(&queue); p != ngx_queue_sentinel(&queue); p=p->next ){
+
+		test_element* e = ngx_queue_data( p, test_element, q);
+
+		if(0 == i){
+			tlog_debug(log, "%d", (int)e->n);
+		}else{
+			tlog_debug(log, ",%d", (int)e->n);
+		}
+		i++;
+	}
+	tlog_debugl(log, "");
+
+	tlog_debugl(log, "ngx_queue_remove");
 	while( !ngx_queue_empty(&queue) ){
 		ngx_queue_t* head = ngx_queue_head(&queue);
-
-		test_element* e = ngx_queue_data( head, test_element, q);
-
-		tlog_debug(log, "%d => %d", i++, e->n);
 		ngx_queue_remove(head);
 	}
 
