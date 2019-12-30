@@ -45,10 +45,12 @@ static echo_handler uri_handlers[] = {
 
 static ngx_int_t test_queue(ngx_log_t* log);
 static ngx_int_t test_pool(ngx_log_t* log);
+static ngx_int_t test_alloc(ngx_log_t* log);
 
 static echo_tester testers[] = {
 	{ ngx_string("ngx_queue_t"), test_queue },
 	{ ngx_string("ngx_pool_t"), test_pool },
+	{ ngx_string("ngx_alloc"), test_alloc },
 };
 
 static ngx_int_t ngx_str_append(ngx_str_t* o, ngx_int_t maxlen, char* str, ngx_int_t len){
@@ -213,33 +215,52 @@ static ngx_int_t test_queue(ngx_log_t* log){
 	return 0;
 }
 
+void dump_pool(ngx_log_t* log, ngx_pool_t* pool){  
+	while(pool) {  
+		tlog_debug(log, "pool=%p", pool);
+		tlog_debug(log, " d.last=%p", pool->d.last);
+		tlog_debug(log, " d.end=%p", pool->d.end);
+		tlog_debug(log, " d.next=%p", pool->d.next); 
+		tlog_debugl(log, " d.failed=%lu", pool->d.failed); 
+		tlog_debug(log, " max = %ld", pool->max); 
+		tlog_debug(log, " current = %p", pool->current); 
+		tlog_debug(log, " chain = %p", pool->chain);  
+		tlog_debug(log, " large = %p", pool->large);  
+		tlog_debug(log, " cleanup = %p", pool->cleanup);  
+		tlog_debugl(log, " log = %p", pool->log);  
+		int available = pool->d.end - pool->d.last;
+		tlog_debugl(log, " available mem=%d", available);
+		pool = pool->d.next;  
+	}  
+}  
+
 static ngx_int_t test_pool(ngx_log_t* log){
 	(void)log;
-/*
-	static ngx_int_t arr[] = {0,1,2,3,4,5,6,7,8,9};
 
-	typedef struct{
-		ngx_int_t n;
-		ngx_queue_t q;
-	}test_queue;
-
-	ngx_int_t nelement = sizeof(arr)/sizeof(arr[0]);
-	ngx_pool_t* pool = ngx_create_pool(sizeof(test_queue) * nelement, NULL);
+	ngx_pool_t* pool = ngx_create_pool(1024, log);
 	if( !pool ){
 		return -1;
 	}
 
-	ngx_queue_t queue;
-	ngx_queue_init(&queue);
+	tlog_debugl(log, "after ngx_create_pool");
+	dump_pool(log, pool);
 
-	for( ngx_int_t i=0; i<sizeof(arr)/sizeof(arr[0]); ++i ){
-		test_queue* q = ngx_palloc(pool, sizeof(test_queue));
+	for( int i=0; i<3; ++i ){
+		void* p = ngx_palloc(pool, 512);
+		(void)p;
 
-		ngx_queue_insert_tail(&queue, q);
+		tlog_debugl(log, "=============foreach %d", i);
+		dump_pool(log, pool);
 	}
-
 	ngx_destroy_pool(pool);
-*/
+
+	return 0;
+}
+
+static ngx_int_t test_alloc(ngx_log_t* log){
+	queue_node* p = ngx_alloc(sizeof(queue_node), log);
+	tlog_debugl(log, "test_alloc p=%p", p);
+	ngx_free(p);
 	return 0;
 }
 

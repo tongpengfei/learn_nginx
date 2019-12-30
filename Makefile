@@ -39,6 +39,7 @@ env:
 	sudo $(APT) $(DEPENDS)
 
 conf:
+	sed "/Werror/d" -i $(NGINX_PATH)/auto/cc/gcc
 	cd $(NGINX_PATH); ./configure \
 		--prefix=$(WORKSPACE) \
 		--with-http_ssl_module \
