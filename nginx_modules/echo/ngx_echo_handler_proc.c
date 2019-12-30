@@ -43,14 +43,16 @@ static echo_handler uri_handlers[] = {
 };
 
 
+static ngx_int_t test_alloc(ngx_log_t* log);
 static ngx_int_t test_queue(ngx_log_t* log);
 static ngx_int_t test_pool(ngx_log_t* log);
-static ngx_int_t test_alloc(ngx_log_t* log);
+static ngx_int_t test_array(ngx_log_t* log);
 
 static echo_tester testers[] = {
+	{ ngx_string("ngx_alloc"), test_alloc },
 	{ ngx_string("ngx_queue_t"), test_queue },
 	{ ngx_string("ngx_pool_t"), test_pool },
-	{ ngx_string("ngx_alloc"), test_alloc },
+	{ ngx_string("ngx_array_t"), test_array },
 };
 
 static ngx_int_t ngx_str_append(ngx_str_t* o, ngx_int_t maxlen, char* str, ngx_int_t len){
@@ -150,6 +152,7 @@ static ngx_int_t handler_type(ngx_http_request_t *r){
 		t = testers + i;
 		tc = t->handler(r->connection->log);
 
+		tlog_debugl(r->connection->log, "==========%s", t->name.data);
 		if( 0 == tc ){
 			ngx_str_appendf(&res, sizeof(buf), "T %2d code=%2d %-10s\n", i, tc, t->name.data);
 		}else{
@@ -254,6 +257,61 @@ static ngx_int_t test_pool(ngx_log_t* log){
 	}
 	ngx_destroy_pool(pool);
 
+	return 0;
+}
+
+//ngx_array_t *ngx_array_create(ngx_pool_t *p, ngx_uint_t n, size_t size);
+//void ngx_array_destroy(ngx_array_t *a);
+//void *ngx_array_push(ngx_array_t *a);
+//void *ngx_array_push_n(ngx_array_t *a, ngx_uint_t n);
+
+static void dump_array(ngx_log_t* log, ngx_array_t* arr){
+	ngx_int_t* a = (ngx_int_t*)arr->elts;
+	tlog_debug(log, "dump_array size=%lu ", arr->nelts);
+	for( int i=0; i<(int)arr->nelts; ++i ){
+		if( 0 == i ){
+			tlog_debug(log, "%ld", a[i]);
+		}else{
+			tlog_debug(log, ",%ld", a[i]);
+		}
+	}
+	tlog_debugl(log, "");
+}
+static ngx_int_t test_array(ngx_log_t* log){
+	ngx_pool_t* pool = ngx_create_pool(1024, log);
+	if( !pool ){
+		return -1;
+	}
+
+	ngx_int_t max_element = 20;
+	ngx_array_t* arr = ngx_array_create(pool, max_element, sizeof(ngx_int_t));
+	dump_array(log, arr);
+
+	//push n elements
+	{
+		int n = arr->nelts;
+		ngx_int_t* added = ngx_array_push_n(arr, 5);
+		tlog_debugl(log, "added=%p", added);
+		for( int i=0; i<(int)arr->nelts; ++i ){
+			added[i] = i + n;
+		}
+		dump_array(log, arr);
+	}
+
+	//push n elements
+	{
+		int n = arr->nelts;
+		ngx_int_t* added = ngx_array_push_n(arr, 5);
+		tlog_debugl(log, "added=%p", added);
+		for( int i=0; i<5; ++i ){
+			added[i] = i + n;
+		}
+		dump_array(log, arr);
+	}
+
+	ngx_array_destroy(arr);
+
+	ngx_destroy_pool(pool);
 	return 0;
 }
 
