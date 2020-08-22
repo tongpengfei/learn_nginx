@@ -1,5 +1,5 @@
 
-PROJECT_ROOT:=$(PWD)
+PROJECT_ROOT:=$(shell pwd)
 NGINX_PATH:=$(PROJECT_ROOT)/nginx-1.10.2
 WORKSPACE:=$(PROJECT_ROOT)/workspace
 NGINX_MODULES_PATH:=nginx_modules
@@ -21,11 +21,12 @@ ifeq ($(APT),none)
 .PHONY: fail
 endif
 
+.PHONY: libtus
 
 nginx:
 	cd $(NGINX_PATH); make
 
-all: wget conf nginx install
+all: wget libtus conf nginx install
 
 fail:
 	@echo "unknown platform $(PLAT)"
@@ -48,11 +49,16 @@ conf:
 		--with-debug \
 		--add-module=../$(NGINX_MODULES_PATH)/hello \
 		--add-module=../$(NGINX_MODULES_PATH)/echo \
+		--add-module=../$(NGINX_MODULES_PATH)/tus \
 
+libtus:
+	make -C libtus
 
 install: nginx stop
 	cd $(NGINX_PATH); make install
 	cp -rf $(PROJECT_ROOT)/myconf/nginx.conf $(WORKSPACE)/conf/nginx.conf
+	cp -f ./libtus/libtus.so $(WORKSPACE)/sbin/libtus.so
+	test -f /usr/local/lib/libtus.so || ln -s $(PROJECT_ROOT)/libtus/libtus.so /usr/local/lib/libtus.so
 
 clean: stop
 	rm -rf $(NGINX_PATH)/objs
@@ -61,10 +67,11 @@ clean: stop
 run: stop
 	@sed 's/daemon off/daemon on/g' -i $(WORKSPACE)/conf/nginx.conf
 	@sed 's/master_process off/master_process on/g' -i $(WORKSPACE)/conf/nginx.conf
-	cd $(WORKSPACE)/sbin; sudo ./nginx
+	$(WORKSPACE)/sbin/nginx
+#	cd $(WORKSPACE)/sbin && sudo ./nginx
 
 stop:
-	$(shell if test -d $(WORKSPACE)/sbin; then cd $(WORKSPACE)/sbin && sudo ./nginx -s stop; fi)
+	$(shell if test -d $(WORKSPACE)/sbin; then $(WORKSPACE)/sbin/nginx -s stop; fi)
 
 reopen:
 	cd $(WORKSPACE)/sbin; sudo ./nginx -s reopen
@@ -83,7 +90,8 @@ p: stop
 	@sed 's/master_process on/master_process off/g' -i $(WORKSPACE)/conf/nginx.conf
 	cd $(WORKSPACE)/sbin; sudo ./nginx
 
-
+test_tus:
+	curl http://127.0.0.1/tus
 
 hello:
 	curl http://127.0.0.1/helloworld
@@ -93,5 +101,4 @@ echo:
 	@echo "# test ver:"
 	@curl http://127.0.0.1/echo/ver
 	@echo "# test ngx_types:"
-	curl http://127.0.0.1/echo/type
-	
+	curl http://127.0.0.1/echo/type	
