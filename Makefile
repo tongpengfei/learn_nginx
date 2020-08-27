@@ -90,6 +90,14 @@ p: stop
 	@sed 's/master_process on/master_process off/g' -i $(WORKSPACE)/conf/nginx.conf
 	cd $(WORKSPACE)/sbin; sudo ./nginx
 
+sim_server:
+	@echo "simulator a tcp server"
+	@echo "client -> nginx 127.0.0.1:8888 -> server 127.0.0.1:9999"
+	nc -lk 9999
+
+sim_client:
+	nc 127.0.0.1 8888
+
 test_tus:
 	curl http://127.0.0.1/tus
 
