@@ -50,6 +50,7 @@ conf:
 		--add-module=../$(NGINX_MODULES_PATH)/hello \
 		--add-module=../$(NGINX_MODULES_PATH)/echo \
 		--add-module=../$(NGINX_MODULES_PATH)/tus \
+		--add-module=../$(NGINX_MODULES_PATH)/mytcp \
 
 libtus:
 	make -C libtus
